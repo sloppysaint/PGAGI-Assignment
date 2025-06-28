@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 interface UserState {
   preferences: string[]
-  favorites: any[]  // array of news articles or movies
+  favorites: any[]
   darkMode: boolean
 }
 
@@ -21,14 +21,11 @@ const userSlice = createSlice({
     },
     addFavorite(state, action: PayloadAction<any>) {
       const fav = action.payload
-      // For news articles
       if (fav.url) {
         if (!state.favorites.some(item => item.url === fav.url)) {
           state.favorites.push(fav)
         }
-      }
-      // For movies
-      else if (fav.id) {
+      } else if (fav.id) {
         if (!state.favorites.some(item => item.id === fav.id)) {
           state.favorites.push(fav)
         }
@@ -36,17 +33,17 @@ const userSlice = createSlice({
     },
     removeFavorite(state, action: PayloadAction<any>) {
       const fav = action.payload
-      // For news articles
       if (fav.url) {
         state.favorites = state.favorites.filter(item => item.url !== fav.url)
-      }
-      // For movies
-      else if (fav.id) {
+      } else if (fav.id) {
         state.favorites = state.favorites.filter(item => item.id !== fav.id)
       }
+    },
+    setDarkMode(state, action: PayloadAction<boolean>) {
+      state.darkMode = action.payload
     }
   }
 })
 
-export const { setPreferences, addFavorite, removeFavorite } = userSlice.actions
+export const { setPreferences, addFavorite, removeFavorite, setDarkMode } = userSlice.actions
 export default userSlice.reducer
