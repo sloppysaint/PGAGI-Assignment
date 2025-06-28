@@ -9,6 +9,7 @@ import {
 } from '../features/content/contentSlice'
 import Spinner from '../components/Spinner/Spinner'
 import ReorderableFeed from '../components/ReorderableFeed/ReorderableFeed'
+import { tmdbGenreMap } from '../utils/tmdbGenres' 
 
 export default function FeedPage() {
   const dispatch = useAppDispatch()
@@ -16,14 +17,18 @@ export default function FeedPage() {
   const { news, loading, page, hasMore, error, recommendations } = useAppSelector(state => state.content)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
+  // Map user preferences to TMDB genre IDs
+  const genreIds = preferences.map(pref => tmdbGenreMap[pref]).filter(Boolean)
+
   // Fetch news and movies on mount and when preferences change
   useEffect(() => {
     dispatch(resetNews())
     if (preferences.length) {
       dispatch(fetchPersonalizedNews({ categories: preferences, page: 1 }))
     }
-    dispatch(fetchRecommendations(1))
-  }, [preferences, dispatch])
+    dispatch(fetchRecommendations({ genreIds, page: 1 }))
+  // eslint-disable-next-line
+  }, [preferences.join(','), dispatch])  // ensure effect triggers when preferences change
 
   // Handler to load more news (pagination)
   const loadMore = async () => {

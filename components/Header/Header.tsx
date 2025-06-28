@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTheme } from '@/hooks/use-theme'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,9 +7,14 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Sun, Moon, Search, X, User } from 'lucide-react'
 
 export default function Header() {
+  const [mounted, setMounted] = useState(false)
   const [search, setSearch] = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const { theme, setTheme, isDark } = useTheme()
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleThemeToggle = () => {
     setTheme(isDark ? 'light' : 'dark')
@@ -18,6 +23,9 @@ export default function Header() {
   const clearSearch = () => {
     setSearch('')
   }
+
+  // Don't render header until after client-side mount, so theme & icons match
+  if (!mounted) return null
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border shadow-sm">

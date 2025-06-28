@@ -20,12 +20,15 @@ export const fetchPersonalizedNews = createAsyncThunk(
   }
 )
 
-// Async thunk for fetching movie recommendations (TMDB)
+// Async thunk for fetching movie recommendations (TMDB) based on genre IDs
 export const fetchRecommendations = createAsyncThunk(
   'content/fetchRecommendations',
-  async (page: number = 1, { rejectWithValue }) => {
+  async (
+    { genreIds = [], page = 1 }: { genreIds: number[]; page: number },
+    { rejectWithValue }
+  ) => {
     try {
-      const data = await fetchRecommendedMovies(page)
+      const data = await fetchRecommendedMovies(genreIds, page)
       return data // array of movies
     } catch (err: any) {
       return rejectWithValue(err.message || 'Failed to fetch movies')
@@ -63,7 +66,6 @@ const contentSlice = createSlice({
       state.page = 1
       state.hasMore = true
     },
-    // (Optional) If you want to reset recommendations as well
     resetRecommendations(state) {
       state.recommendations = []
     },
@@ -105,5 +107,3 @@ const contentSlice = createSlice({
 
 export const { incrementPage, resetNews, resetRecommendations } = contentSlice.actions
 export default contentSlice.reducer
-
-
