@@ -9,12 +9,13 @@ import {
 } from '../../../features/content/contentSlice'
 import Spinner from '../../../components/Spinner/Spinner'
 import ReorderableFeed from '../../../components/ReorderableFeed/ReorderableFeed'
-import { tmdbGenreMap } from '../../../utils/tmdbGenres' 
+import { tmdbGenreMap } from '../../../utils/tmdbGenres'
 
 export default function FeedPage() {
   const dispatch = useAppDispatch()
   const preferences = useAppSelector(state => state.user.preferences)
   const { news, loading, page, hasMore, error, recommendations } = useAppSelector(state => state.content)
+  const search = useAppSelector(state => state.user.search)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Map user preferences to TMDB genre IDs
@@ -27,8 +28,8 @@ export default function FeedPage() {
       dispatch(fetchPersonalizedNews({ categories: preferences, page: 1 }))
     }
     dispatch(fetchRecommendations({ genreIds, page: 1 }))
-  // eslint-disable-next-line
-  }, [preferences.join(','), dispatch])  // ensure effect triggers when preferences change
+    // eslint-disable-next-line
+  }, [preferences.join(','), dispatch])
 
   // Handler to load more news (pagination)
   const loadMore = async () => {
@@ -37,6 +38,23 @@ export default function FeedPage() {
     await dispatch(fetchPersonalizedNews({ categories: preferences, page: page + 1 }))
     setIsLoadingMore(false)
   }
+
+  // ------- Search Filtering -------
+  const filterBySearch = (items: any[]) => {
+    if (!search.trim()) return items
+    const s = search.toLowerCase()
+    return items.filter(
+      (item) =>
+        item.title?.toLowerCase().includes(s) ||
+        item.name?.toLowerCase().includes(s) ||
+        item.description?.toLowerCase().includes(s) ||
+        item.overview?.toLowerCase().includes(s)
+    )
+  }
+  const filteredNews = filterBySearch(news)
+  const filteredMovies = filterBySearch(recommendations)
+
+  // ---------------------------------
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -78,29 +96,27 @@ export default function FeedPage() {
                 Latest News
               </h2>
             </div>
-            {news.length > 0 && (
+            {filteredNews.length > 0 && (
               <div className="flex-1 flex justify-end">
                 <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
-                  {news.length} articles
+                  {filteredNews.length} articles
                 </span>
               </div>
             )}
           </div>
 
-          <ReorderableFeed 
-            articles={news} 
-            emptyText="No news found for your preferences." 
+          <ReorderableFeed
+            articles={filteredNews}
+            emptyText="No news found for your preferences."
           />
 
-          {/* Loading State */}
           {loading && !isLoadingMore && (
             <div className="flex justify-center py-12">
               <Spinner />
             </div>
           )}
 
-          {/* Load More Section */}
-          {!loading && hasMore && news.length > 0 && (
+          {!loading && hasMore && filteredNews.length > 0 && (
             <div className="flex justify-center mt-12">
               <button
                 className="group relative inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
@@ -124,8 +140,7 @@ export default function FeedPage() {
             </div>
           )}
 
-          {/* End of News Indicator */}
-          {!loading && !hasMore && news.length > 0 && (
+          {!loading && !hasMore && filteredNews.length > 0 && (
             <div className="flex justify-center mt-12">
               <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                 <div className="w-12 h-px bg-gray-400 dark:bg-gray-600"></div>
@@ -149,18 +164,18 @@ export default function FeedPage() {
                 Movie Recommendations
               </h2>
             </div>
-            {recommendations.length > 0 && (
+            {filteredMovies.length > 0 && (
               <div className="flex-1 flex justify-end">
                 <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 px-3 py-1 rounded-full text-sm font-medium">
-                  {recommendations.length} movies
+                  {filteredMovies.length} movies
                 </span>
               </div>
             )}
           </div>
 
-          <ReorderableFeed 
-            articles={recommendations} 
-            emptyText="No movie recommendations found." 
+          <ReorderableFeed
+            articles={filteredMovies}
+            emptyText="No movie recommendations found."
           />
         </section>
       </div>

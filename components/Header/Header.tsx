@@ -7,18 +7,21 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Sun, Moon, Search, X, User, LogOut } from 'lucide-react'
 import { useSession, signOut } from "next-auth/react"
 import toast from 'react-hot-toast'
+import { useAppDispatch, useAppSelector } from '@/redux/hooks'
+import { setSearch } from '@/features/user/userSlice'
 
 export default function Header() {
   const [mounted, setMounted] = useState(false)
-  const [search, setSearch] = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const { theme, setTheme, isDark } = useTheme()
   const { data: session } = useSession()
+  const dispatch = useAppDispatch()
+  const search = useAppSelector(state => state.user.search)
 
   useEffect(() => { setMounted(true) }, [])
 
   const handleThemeToggle = () => setTheme(isDark ? 'light' : 'dark')
-  const clearSearch = () => setSearch('')
+  const clearSearch = () => dispatch(setSearch(''))
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/auth/signin' })
@@ -44,12 +47,10 @@ export default function Header() {
             </h1>
           </div>
 
-          {/* Enhanced Search Bar */}
+          {/* Global Search Bar */}
           <div className="flex-1 max-w-2xl mx-auto">
             <div className={`relative group transition-all duration-300 ${
-              isSearchFocused 
-                ? 'transform scale-[1.02]' 
-                : ''
+              isSearchFocused ? 'transform scale-[1.02]' : ''
             }`}>
               {/* Search Icon */}
               <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground transition-colors duration-200 group-focus-within:text-blue-600 z-10">
@@ -58,7 +59,7 @@ export default function Header() {
               <Input
                 type="text"
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={e => dispatch(setSearch(e.target.value))}
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setIsSearchFocused(false)}
                 placeholder="Search news, movies, posts..."
@@ -93,13 +94,13 @@ export default function Header() {
               <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600/10 to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative w-6 h-6 flex items-center justify-center">
                 <Sun className={`absolute w-6 h-6 text-yellow-500 transition-all duration-500 ${
-                  isDark 
-                    ? 'opacity-100 rotate-0 scale-100' 
+                  isDark
+                    ? 'opacity-100 rotate-0 scale-100'
                     : 'opacity-0 rotate-180 scale-75'
                 }`} />
                 <Moon className={`absolute w-6 h-6 text-blue-400 transition-all duration-500 ${
-                  !isDark 
-                    ? 'opacity-100 rotate-0 scale-100' 
+                  !isDark
+                    ? 'opacity-100 rotate-0 scale-100'
                     : 'opacity-0 -rotate-180 scale-75'
                 }`} />
               </div>
@@ -134,7 +135,7 @@ export default function Header() {
         {search && (
           <div className="mt-3 px-4 py-2 bg-blue-600/5 rounded-lg border border-blue-600/20">
             <p className="text-sm text-blue-600">
-              <span className="font-medium">Searching for:</span> "{search}"
+              <span className="font-medium">Searching for:</span> {search}
             </p>
           </div>
         )}

@@ -40,12 +40,14 @@ interface UserState {
   preferences: string[]
   favorites: any[] // Each favorite: { id, itemId, type, data, createdAt }
   darkMode: boolean
+  search: string
 }
 
 const initialState: UserState = {
   preferences: [],
   favorites: [],
   darkMode: false,
+  search: '',       // <--- Added search here
 }
 
 const userSlice = createSlice({
@@ -58,12 +60,14 @@ const userSlice = createSlice({
     setDarkMode(state, action: PayloadAction<boolean>) {
       state.darkMode = action.payload
     },
-    // Optimistic UI (optional, not needed with DB persistence)
+    setSearch(state, action: PayloadAction<string>) {   // <-- Search
+      state.search = action.payload
+    },
     addFavorite(state, action: PayloadAction<any>) {
-      // You could update UI immediately here
+      // Optional: UI only, not used with DB persistence
     },
     removeFavorite(state, action: PayloadAction<any>) {
-      // You could update UI immediately here
+      // Optional: UI only, not used with DB persistence
     }
   },
   extraReducers: (builder) => {
@@ -87,6 +91,7 @@ const userSlice = createSlice({
 export const {
   setPreferences,
   setDarkMode,
+  setSearch,
   addFavorite,
   removeFavorite,
 } = userSlice.actions
