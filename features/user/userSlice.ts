@@ -1,8 +1,44 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
+
+// Thunks
+export const fetchFavorites = createAsyncThunk(
+  'user/fetchFavorites',
+  async () => {
+    const res = await fetch('/api/favorites')
+    if (!res.ok) throw new Error('Failed to fetch favorites')
+    return await res.json()
+  }
+)
+
+export const addFavoriteToDB = createAsyncThunk(
+  'user/addFavoriteToDB',
+  async (article: any) => {
+    const res = await fetch('/api/favorites', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: article }),
+    })
+    if (!res.ok) throw new Error('Failed to add favorite')
+    return await res.json()
+  }
+)
+
+export const removeFavoriteFromDB = createAsyncThunk(
+  'user/removeFavoriteFromDB',
+  async ({ itemId, type }: { itemId: string, type: string }) => {
+    const res = await fetch('/api/favorites', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId, type }),
+    })
+    if (!res.ok) throw new Error('Failed to remove favorite')
+    return { itemId, type }
+  }
+)
 
 interface UserState {
   preferences: string[]
-  favorites: any[]
+  favorites: any[] // Each favorite: { id, itemId, type, data, createdAt }
   darkMode: boolean
 }
 
@@ -19,31 +55,40 @@ const userSlice = createSlice({
     setPreferences(state, action: PayloadAction<string[]>) {
       state.preferences = action.payload
     },
-    addFavorite(state, action: PayloadAction<any>) {
-      const fav = action.payload
-      if (fav.url) {
-        if (!state.favorites.some(item => item.url === fav.url)) {
-          state.favorites.push(fav)
-        }
-      } else if (fav.id) {
-        if (!state.favorites.some(item => item.id === fav.id)) {
-          state.favorites.push(fav)
-        }
-      }
-    },
-    removeFavorite(state, action: PayloadAction<any>) {
-      const fav = action.payload
-      if (fav.url) {
-        state.favorites = state.favorites.filter(item => item.url !== fav.url)
-      } else if (fav.id) {
-        state.favorites = state.favorites.filter(item => item.id !== fav.id)
-      }
-    },
     setDarkMode(state, action: PayloadAction<boolean>) {
       state.darkMode = action.payload
+    },
+    // Optimistic UI (optional, not needed with DB persistence)
+    addFavorite(state, action: PayloadAction<any>) {
+      // You could update UI immediately here
+    },
+    removeFavorite(state, action: PayloadAction<any>) {
+      // You could update UI immediately here
     }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchFavorites.fulfilled, (state, action) => {
+        state.favorites = action.payload
+      })
+      .addCase(addFavoriteToDB.fulfilled, (state, action) => {
+        if (!state.favorites.some(fav => fav.id === action.payload.id)) {
+          state.favorites.push(action.payload)
+        }
+      })
+      .addCase(removeFavoriteFromDB.fulfilled, (state, action) => {
+        state.favorites = state.favorites.filter(
+          fav => !(fav.itemId === action.payload.itemId && fav.type === action.payload.type)
+        )
+      })
   }
 })
 
-export const { setPreferences, addFavorite, removeFavorite, setDarkMode } = userSlice.actions
+export const {
+  setPreferences,
+  setDarkMode,
+  addFavorite,
+  removeFavorite,
+} = userSlice.actions
+
 export default userSlice.reducer

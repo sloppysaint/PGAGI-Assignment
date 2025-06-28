@@ -1,8 +1,8 @@
 'use client'
 
-import { useAppDispatch, useAppSelector } from '../../redux/hooks'
-import { setPreferences } from '../../features/user/userSlice'
-import { categories } from '../../utils/categories'
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks'
+import { setPreferences } from '../../../features/user/userSlice'
+import { categories } from '../../../utils/categories'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'

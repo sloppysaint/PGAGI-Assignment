@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast, { Toaster } from 'react-hot-toast'
 import Link from "next/link"
+
 export default function SignupPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
@@ -44,20 +45,20 @@ export default function SignupPage() {
     e.preventDefault()
     setError("")
     setLoading(true)
-    
+
     const form = e.target
     const name = form.name.value
     const email = form.email.value
     const password = form.password.value
-    
+
     const res = await fetch('/api/auth/signup', {
       method: 'POST',
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password })
     })
-    
+
     const data = await res.json()
-    
+
     if (!res.ok) {
       setError(data.error || "Signup failed")
       toast.error(data.error || "Signup failed")
@@ -65,22 +66,22 @@ export default function SignupPage() {
       toast.success("Account created! Please log in.")
       setTimeout(() => router.push('/auth/signin'), 1200)
     }
-    
+
     setLoading(false)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900 p-4 sm:p-6 lg:p-8">
+    <div className="fixed inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900 transition-colors duration-500">
       <Toaster position="top-center" />
       
       {/* Animated background elements - responsive sizes */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute -top-20 -right-20 sm:-top-40 sm:-right-40 w-40 h-40 sm:w-80 sm:h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
         <div className="absolute -bottom-20 -left-20 sm:-bottom-40 sm:-left-40 w-40 h-40 sm:w-80 sm:h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-700"></div>
         <div className="absolute top-20 left-20 sm:top-40 sm:left-40 w-30 h-30 sm:w-60 sm:h-60 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
       </div>
 
-      <div className="relative w-full max-w-sm sm:max-w-md transform transition-all duration-500 hover:scale-105">
+      <div className="relative w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto transform transition-all duration-500 hover:scale-105 p-2 sm:p-6 z-10">
         {/* Card container with glassmorphism effect */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/20 rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 space-y-4 sm:space-y-6">
           
@@ -218,7 +219,7 @@ export default function SignupPage() {
             {/* Sign in link */}
             <div className="text-center">
               <Link 
-                href="/signin" 
+                href="/auth/signin" 
                 className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors duration-200 hover:underline"
               >
                 Already have an account? <span className="font-semibold">Sign in</span>

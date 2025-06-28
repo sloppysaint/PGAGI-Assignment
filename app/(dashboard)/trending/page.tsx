@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useAppDispatch, useAppSelector } from '../../redux/hooks'
-import TrendingSection from '../../components/TrendingSection/TrendingSection'
-import { fetchPersonalizedNews, fetchRecommendations } from '../../features/content/contentSlice'
-import { tmdbGenreMap } from '../../utils/tmdbGenres'
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks'
+import TrendingSection from '../../../components/TrendingSection/TrendingSection'
+import { fetchPersonalizedNews, fetchRecommendations } from '../../../features/content/contentSlice'
+import { tmdbGenreMap } from '../../../utils/tmdbGenres'
 
 export default function TrendingPage() {
   const dispatch = useAppDispatch()

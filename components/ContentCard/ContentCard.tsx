@@ -1,6 +1,6 @@
 'use client'
 import { useAppDispatch, useAppSelector } from '../../redux/hooks'
-import { addFavorite, removeFavorite } from '../../features/user/userSlice'
+import { addFavoriteToDB, removeFavoriteFromDB } from '../../features/user/userSlice'
 
 type ContentCardProps = {
   article: any
@@ -10,30 +10,28 @@ export default function ContentCard({ article }: ContentCardProps) {
   const dispatch = useAppDispatch()
   const favorites = useAppSelector(state => state.user.favorites)
 
-  // Correct favorite logic: check by url (news) or id (movie)
-  const isFavorited = favorites.some(fav =>
-    (article.url && fav.url === article.url) ||
-    (article.id && fav.id === article.id)
+  // Find favorite DB object for this article, if it exists
+  const favObj = favorites.find(fav =>
+    (article.url && fav.data?.url === article.url) ||
+    (article.id && fav.data?.id === article.id)
   )
+  const isFavorited = !!favObj
 
   const handleFavorite = () => {
     if (isFavorited) {
-      dispatch(removeFavorite(article))
+      dispatch(removeFavoriteFromDB({ itemId: favObj.itemId, type: favObj.type }))
     } else {
-      dispatch(addFavorite(article))
+      dispatch(addFavoriteToDB(article))
     }
   }
 
-  // Determine if this is a movie or news article
   const isMovie = article.id && !article.url
   const hasImage = article.urlToImage || article.poster_path
 
   return (
     <div className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden h-full flex flex-col">
-      {/* Image Container */}
       {hasImage && (
         <div className="relative overflow-hidden bg-gray-100 dark:bg-gray-700">
-          {/* Image */}
           {article.urlToImage && (
             <img 
               src={article.urlToImage} 
@@ -48,11 +46,7 @@ export default function ContentCard({ article }: ContentCardProps) {
               className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105" 
             />
           )}
-          
-          {/* Image Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          
-          {/* Content Type Badge */}
           <div className="absolute top-3 left-3">
             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${
               isMovie 
@@ -78,29 +72,21 @@ export default function ContentCard({ article }: ContentCardProps) {
           </div>
         </div>
       )}
-
-      {/* Content Container */}
       <div className="p-4 flex flex-col flex-1">
-        {/* Header with Title and Favorite Button */}
         <div className="flex items-start gap-3 mb-3">
           <h2 className="font-bold text-lg text-gray-900 dark:text-white leading-tight flex-1 line-clamp-2">
             {article.title || article.name}
           </h2>
-          
-          {/* Enhanced Favorite Button */}
           <button
             className="flex-shrink-0 relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 group/fav"
             onClick={handleFavorite}
             aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
           >
-            {/* Button Background Effect */}
             <div className={`absolute inset-0 rounded-full transition-all duration-200 ${
               isFavorited 
                 ? 'bg-red-50 dark:bg-red-900/20 scale-100' 
                 : 'bg-gray-50 dark:bg-gray-700/50 scale-0 group-hover/fav:scale-100'
             }`}></div>
-            
-            {/* Heart Icon */}
             <div className="relative">
               {isFavorited ? (
                 <svg className="w-5 h-5 text-red-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
@@ -114,15 +100,10 @@ export default function ContentCard({ article }: ContentCardProps) {
             </div>
           </button>
         </div>
-
-        {/* Description */}
         <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4 flex-1 line-clamp-3">
           {article.description || article.overview}
         </p>
-
-        {/* Footer with Action Button */}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
-          {/* Action Link */}
           {article.url && (
             <a
               href={article.url}
@@ -136,7 +117,6 @@ export default function ContentCard({ article }: ContentCardProps) {
               </svg>
             </a>
           )}
-          
           {article.id && !article.url && (
             <a
               href={`https://www.themoviedb.org/movie/${article.id}`}
@@ -150,8 +130,6 @@ export default function ContentCard({ article }: ContentCardProps) {
               </svg>
             </a>
           )}
-
-          {/* Rating or Date (if available) */}
           {article.vote_average && (
             <div className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400">
               <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -162,8 +140,6 @@ export default function ContentCard({ article }: ContentCardProps) {
           )}
         </div>
       </div>
-
-      {/* Hover Effect Border */}
       <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
     </div>
   )
