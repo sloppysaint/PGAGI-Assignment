@@ -5,9 +5,9 @@ import { setPreferences } from '../../features/user/userSlice'
 import { categories } from '../../utils/categories'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import toast from 'react-hot-toast'
 
-
-
+// Add your categoryIcons as before...
 const categoryIcons: Record<string, React.ReactNode> = {
   Technology: <span>💻</span>,
   Sports: <span>🏆</span>,
@@ -21,33 +21,54 @@ const categoryIcons: Record<string, React.ReactNode> = {
   Travel: <span>✈️</span>,
 }
 
-// ---- Main component ----
 export default function SettingsPage() {
   const dispatch = useAppDispatch()
-  const savedPrefs = useAppSelector(state => state.user.preferences)
-  const [selected, setSelected] = useState<string[]>(savedPrefs || [])
+  const reduxPrefs = useAppSelector(state => state.user.preferences)
+  const [selected, setSelected] = useState<string[]>([])
   const [showToast, setShowToast] = useState(false)
+  const [loading, setLoading] = useState(true)
 
+  // On mount, fetch preferences from API and update Redux + local state
   useEffect(() => {
-    setSelected(savedPrefs)
-  }, [savedPrefs])
+    fetch('/api/user/preferences')
+      .then(res => res.json())
+      .then(data => {
+        setSelected(data.preferences || [])
+        dispatch(setPreferences(data.preferences || []))
+      })
+      .finally(() => setLoading(false))
+  }, [dispatch])
 
   const toggleCategory = (cat: string) => {
-    setSelected(selected =>
-      selected.includes(cat)
-        ? selected.filter(c => c !== cat)
-        : [...selected, cat]
+    setSelected(prev =>
+      prev.includes(cat)
+        ? prev.filter(c => c !== cat)
+        : [...prev, cat]
     )
   }
 
-  const handleSave = () => {
-    dispatch(setPreferences(selected))
-    setShowToast(true)
-    setTimeout(() => setShowToast(false), 1500)
+  const handleSave = async () => {
+    const res = await fetch('/api/user/preferences', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ preferences: selected }),
+    })
+    if (res.ok) {
+      dispatch(setPreferences(selected))
+      setShowToast(true)
+      toast.success("Preferences saved!")
+      setTimeout(() => setShowToast(false), 1500)
+    } else {
+      toast.error("Failed to save preferences")
+    }
   }
 
   const handleSelectAll = () => setSelected([...categories])
   const handleClearAll = () => setSelected([])
+
+  if (loading) {
+    return <div className="max-w-xl mx-auto px-4 py-10 text-lg text-gray-600">Loading preferences…</div>
+  }
 
   return (
     <div className="max-w-xl mx-auto px-4 py-10">
