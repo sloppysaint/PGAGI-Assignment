@@ -107,7 +107,7 @@ export default function FeedPage() {
 
           <ReorderableFeed
             articles={filteredNews}
-            emptyText="No news found for your preferences."
+            emptyText="Manage your prefrences from the settings."
           />
 
           {loading && !isLoadingMore && (

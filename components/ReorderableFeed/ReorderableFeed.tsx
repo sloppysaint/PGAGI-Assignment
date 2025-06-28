@@ -27,7 +27,7 @@ export default function ReorderableFeed({
           {emptyText || "No items to show."}
         </p>
         <p className="text-center text-gray-500 text-sm mt-2">
-          Check back later for new content
+          Comeback after setting up your preferences
         </p>
       </div>
     );
